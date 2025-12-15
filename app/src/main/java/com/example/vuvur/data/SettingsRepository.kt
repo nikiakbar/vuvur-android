@@ -47,12 +47,11 @@ class SettingsRepository(
 
     // ✅ Map of default API URLs to their respective keys
     private val DEFAULT_API_KEYS = mapOf(
-        "http://100.97.27.128:5001" to "vuvur_dev",
-        "http://100.97.27.128:7752" to "vuvur_prod",
+        "http://100.70.215.39:5001" to "vuvur_dev",
+        "http://100.70.215.39:7752" to "vuvur_prod",
         "http://100.78.149.91:5001" to "vuvur_dev",
         "http://100.78.149.91:5002" to "vuvur_prod"
     )
-
     val activeApiUrlFlow: Flow<String> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.ACTIVE_API_URL] ?: DEFAULT_API_LIST.first()
     }
