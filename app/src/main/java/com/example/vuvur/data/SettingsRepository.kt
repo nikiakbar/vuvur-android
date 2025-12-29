@@ -55,6 +55,13 @@ class SettingsRepository(
         "http://100.78.149.91:3532" to "vuvur_prod"
     )
 
+    // ✅ Map of API URLs to pretty aliases for UI
+    private val DEFAULT_API_ALIASES = mapOf(
+        "http://100.70.215.39:3602" to "home-dev",
+        "http://100.70.215.39:3532" to "home-prod",
+        "http://100.78.149.91:3532" to "azure-prod"
+    )
+
     val activeApiUrlFlow: Flow<String> = dataStore.data.map { preferences ->
         preferences[PreferencesKeys.ACTIVE_API_URL] ?: DEFAULT_API_LIST.first()
     }
@@ -87,6 +94,11 @@ class SettingsRepository(
         // In the future, this could check saved preferences.
         // For now, it only checks the hardcoded default map.
         return DEFAULT_API_KEYS[url]
+    }
+
+    // ✅ Public function to get the alias for a given URL
+    fun getAliasForUrl(url: String): String {
+        return DEFAULT_API_ALIASES[url] ?: url
     }
 
     suspend fun saveApiUrl(url: String) {

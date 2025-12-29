@@ -103,7 +103,7 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                     onExpandedChange = { showApiDropdown = !showApiDropdown }
                 ) {
                     OutlinedTextField(
-                        value = state.activeApi,
+                        value = state.apiAliases[state.activeApi] ?: state.activeApi,
                         onValueChange = {},
                         label = { Text("Active API URL") },
                         readOnly = true,
@@ -117,8 +117,9 @@ fun SettingsScreen(viewModel: SettingsViewModel = viewModel()) {
                         onDismissRequest = { showApiDropdown = false }
                     ) {
                         state.apiList.forEach { apiUrl ->
+                            val alias = state.apiAliases[apiUrl] ?: apiUrl
                             DropdownMenuItem(
-                                text = { Text(apiUrl) },
+                                text = { Text(alias) },
                                 onClick = {
                                     viewModel.saveSettings(apiUrl)
                                     showApiDropdown = false
