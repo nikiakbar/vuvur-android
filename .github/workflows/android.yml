@@ -1,0 +1,37 @@
+name: Android CI
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: set up JDK 21
+      uses: actions/setup-java@v3
+      with:
+        java-version: '21'
+        distribution: 'temurin'
+        cache: gradle
+
+    - name: Build with Gradle
+      run: ./gradlew assembleRelease
+
+    - name: Find APK
+      id: find_apk
+      run: echo "apk_path=$(find app/build/outputs/apk/release -name '*.apk')" >> $GITHUB_ENV
+
+    - name: Upload APK to Telegram
+      uses: appleboy/telegram-action@v1.0.1
+      with:
+        to: ${{ secrets.TELEGRAM_TO }}
+        token: ${{ secrets.TELEGRAM_TOKEN }}
+        message: |
+          New build is ready!
+          Commit: ${{ github.sha }}
+          Message: ${{ github.event.head_commit.message }}
+        document: ${{ env.apk_path }}
