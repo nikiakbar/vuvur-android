@@ -42,8 +42,15 @@ jobs:
           # Update gradle.properties
           sed -i "s/app.versionName=.*/app.versionName=$NEW_VERSION/" gradle.properties
           
-          echo "version=$NEW_VERSION" >> $GITHUB_OUTPUT
-          echo "New version: $NEW_VERSION"
+          # Determine final version string for release
+          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+            VERSION_STRING="${NEW_VERSION}-dev.${GITHUB_RUN_NUMBER}"
+          else
+            VERSION_STRING="${NEW_VERSION}"
+          fi
+
+          echo "version=$VERSION_STRING" >> $GITHUB_OUTPUT
+          echo "New version: $VERSION_STRING"
 
       - name: Commit and Push Version Bump
         if: github.ref == 'refs/heads/main'
@@ -81,6 +88,7 @@ jobs:
           tag_name: v${{ steps.bump_version.outputs.version }}
           name: Release v${{ steps.bump_version.outputs.version }}
           files: app/build/outputs/apk/debug/*.apk
+          prerelease: ${{ github.ref_name == 'dev' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
