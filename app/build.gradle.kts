@@ -12,7 +12,11 @@ android {
         applicationId = "com.example.vuvur"
         minSdk = 33
         targetSdk = 36
-        versionCode = project.property("app.versionCode").toString().toInt()
+        versionCode = if (project.hasProperty("versionCode")) {
+            project.property("versionCode").toString().toInt()
+        } else {
+            project.property("app.versionCode").toString().toInt()
+        }
         versionName = project.property("app.versionName").toString()
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
