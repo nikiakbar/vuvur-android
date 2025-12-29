@@ -23,6 +23,13 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
+      - name: Extract Version
+        id: get_version
+        run: |
+          VERSION=$(grep "app.versionName" gradle.properties | cut -d'=' -f2)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Extracted version: $VERSION"
+
       - run: chmod +x gradlew
 
       - name: Build APK
@@ -44,10 +51,11 @@ jobs:
           fi
 
       - name: Upload APK to GitHub Release
+        id: create_release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v${{ github.run_number }}-${{ github.ref_name }}
-          name: Build v${{ github.run_number }} (${{ github.ref_name }})
+          tag_name: v${{ steps.get_version.outputs.version }}
+          name: Release v${{ steps.get_version.outputs.version }}
           files: app/build/outputs/apk/release/*.apk
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -56,14 +64,12 @@ jobs:
         run: |
           ls -lh app/build/outputs/apk/release/*.apk
 
-      - name: Send APK to Telegram
+      - name: Send Release URL to Telegram
         run: |
-          APK_PATH=$(ls app/build/outputs/apk/release/*.apk | head -n 1)
-          APK_NAME=$(basename "$APK_PATH")
+          RELEASE_URL="${{ steps.create_release.outputs.url }}"
+          VERSION="${{ steps.get_version.outputs.version }}"
+          echo "Sending Release URL: $RELEASE_URL"
 
-          echo "Sending APK: $APK_NAME"
-
-          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendDocument" \
-            -F chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
-            -F document=@"$APK_PATH" \
-            -F caption="New APK build (${{ github.ref_name }}): $APK_NAME"
+          curl -X POST "https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage" \
+            -d chat_id="${{ secrets.TELEGRAM_CHAT_ID }}" \
+            -d text="New APK release available: v$VERSION ($RELEASE_URL)"
