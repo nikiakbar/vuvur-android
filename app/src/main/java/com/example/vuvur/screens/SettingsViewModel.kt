@@ -15,6 +15,8 @@ data class SettingsUiState(
     val isLoading: Boolean = false,
     val activeApi: String = "",
     val apiList: List<String> = emptyList(),
+    // ✅ Add map of URL to alias for the UI
+    val apiAliases: Map<String, String> = emptyMap(),
     // ✅ Add zoomLevel to the UI state
     val zoomLevel: Float = 2.5f,
     val message: String? = null
@@ -37,9 +39,12 @@ class SettingsViewModel(application: Application) : AndroidViewModel(application
                 repository.apiListFlow,
                 repository.zoomLevelFlow
             ) { activeUrl, urlList, zoom ->
+                // ✅ Extract aliases for the list of URLs
+                val aliases = urlList.associateWith { repository.getAliasForUrl(it) }
                 SettingsUiState(
                     activeApi = activeUrl,
                     apiList = urlList,
+                    apiAliases = aliases,
                     zoomLevel = zoom
                 )
             }.collect {

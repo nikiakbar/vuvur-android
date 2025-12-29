@@ -23,6 +23,19 @@ android {
         vectorDrawables.useSupportLibrary = true
     }
 
+    flavorDimensions.add("environment")
+    productFlavors {
+        create("dev") {
+            dimension = "environment"
+            applicationIdSuffix = ".dev"
+            manifestPlaceholders["appName"] = "Vuvur Dev"
+        }
+        create("prod") {
+            dimension = "environment"
+            manifestPlaceholders["appName"] = "Vuvur"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
