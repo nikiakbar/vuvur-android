@@ -35,8 +35,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
@@ -51,6 +53,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.vuvur.screens.GalleryScreen
+import com.example.vuvur.screens.LockScreen
 import com.example.vuvur.screens.MediaViewModel
 import com.example.vuvur.screens.RandomScreen
 import com.example.vuvur.screens.SettingsScreen
@@ -94,13 +97,17 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppNavigation() {
-    val navController = rememberNavController()
-    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-    val scope = rememberCoroutineScope()
+    var isUnlocked by remember { mutableStateOf(false) }
 
-    val mediaViewModel: MediaViewModel = viewModel()
+    if (!isUnlocked) {
+        LockScreen(onUnlock = { isUnlocked = true })
+    } else {
+        val navController = rememberNavController()
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scope = rememberCoroutineScope()
 
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
+        val mediaViewModel: MediaViewModel = viewModel()
+        val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
 
     val route = currentDestination?.route
