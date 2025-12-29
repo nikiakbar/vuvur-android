@@ -64,18 +64,28 @@ jobs:
       - run: chmod +x gradlew
 
       - name: Build APK
-        run: ./gradlew :app:assembleDebug -PversionCode=${{ github.run_number }}
+        run: |
+          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+            ./gradlew :app:assembleDevDebug -PversionCode=${{ github.run_number }}
+          else
+            ./gradlew :app:assembleProdDebug -PversionCode=${{ github.run_number }}
+          fi
 
       - name: Rename APK if dev branch
         run: |
-          APK_PATH=$(ls app/build/outputs/apk/debug/*.apk | head -n 1)
+          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+            APK_PATH=$(ls app/build/outputs/apk/dev/debug/*.apk | head -n 1)
+          else
+            APK_PATH=$(ls app/build/outputs/apk/prod/debug/*.apk | head -n 1)
+          fi
+          
           APK_NAME=$(basename "$APK_PATH")
-
           echo "Original APK: $APK_NAME"
 
           if [ "${GITHUB_REF_NAME}" = "dev" ]; then
             NEW_APK_NAME="dev-$APK_NAME"
-            mv "$APK_PATH" "app/build/outputs/apk/debug/$NEW_APK_NAME"
+            # Move to a common location for release upload if needed, or just rename in place
+            mv "$APK_PATH" "app/build/outputs/apk/dev/debug/$NEW_APK_NAME"
             echo "Renamed APK: $NEW_APK_NAME"
           else
             echo "APK name unchanged"
@@ -87,14 +97,16 @@ jobs:
         with:
           tag_name: v${{ steps.bump_version.outputs.version }}
           name: Release v${{ steps.bump_version.outputs.version }}
-          files: app/build/outputs/apk/debug/*.apk
+          files: |
+            app/build/outputs/apk/dev/debug/*.apk
+            app/build/outputs/apk/prod/debug/*.apk
           prerelease: ${{ github.ref_name == 'dev' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Print APK name
         run: |
-          ls -lh app/build/outputs/apk/debug/*.apk
+          ls -R app/build/outputs/apk/
 
       - name: Send Release URL to Telegram
         run: |
