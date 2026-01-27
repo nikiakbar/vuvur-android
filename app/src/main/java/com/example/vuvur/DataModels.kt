@@ -42,7 +42,11 @@ data class DeleteResponse(
 )
 
 sealed interface GalleryUiState {
-    data class Loading(val apiUrl: String? = null) : GalleryUiState
+    data class Loading(
+        val apiUrl: String? = null,
+        val apiAlias: String? = null
+    ) : GalleryUiState
+
     data class Scanning(val progress: Int, val total: Int) : GalleryUiState
     data class Error(val message: String) : GalleryUiState
     data class Success(
@@ -51,6 +55,7 @@ sealed interface GalleryUiState {
         val currentPage: Int = 1,
         val isLoadingNextPage: Boolean = false,
         val activeApiUrl: String,
+        val activeApiAlias: String = "",
         // ✅ Add the API key to the success state
         val activeApiKey: String?,
         val zoomLevel: Float = 2.5f,

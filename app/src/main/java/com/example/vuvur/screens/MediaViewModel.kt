@@ -244,6 +244,7 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
 
             val activeApiUrl = repository.activeApiUrlFlow.first()
             val activeApiKey = repository.getApiKeyForUrl(activeApiUrl)
+            val activeApiAlias = repository.getAliasForUrl(activeApiUrl)
             val zoomLevel = repository.zoomLevelFlow.first()
             val previousSuccessState = currentStateValue as? GalleryUiState.Success
             var groups: List<GroupInfo> = previousSuccessState?.groups ?: emptyList()
@@ -255,7 +256,7 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
             if (isNewSearch) {
                 println("BBB loadPage: isNewSearch = true. Setting state to Loading.")
                 // Set Loading state, try to preserve essential info across the transition
-                _uiState.value = GalleryUiState.Loading(activeApiUrl)
+                _uiState.value = GalleryUiState.Loading(activeApiUrl, activeApiAlias)
                 try {
                     println("BBB loadPage: Fetching groups...")
                     groups = apiService.getGroups()
@@ -277,7 +278,7 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
                 currentSubgroupsList = currentStateValue.subgroups
             } else {
                 println("BBB loadPage: Current state is ${currentStateValue::class.simpleName}. Setting Loading state.")
-                _uiState.value = GalleryUiState.Loading(activeApiUrl)
+                _uiState.value = GalleryUiState.Loading(activeApiUrl, activeApiAlias)
                 // Determine subgroup state based on current filter tags
                 isLoadingSubgroups = currentGroupTag != null // If a group is selected, assume loading might be needed
                 currentSubgroupsList = emptyList() // No previous state to preserve list from
@@ -316,6 +317,7 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
                         currentPage = response.page,
                         isLoadingNextPage = false,
                         activeApiUrl = activeApiUrl,
+                        activeApiAlias = activeApiAlias,
                         activeApiKey = activeApiKey,
                         zoomLevel = zoomLevel,
                         groups = groups,
