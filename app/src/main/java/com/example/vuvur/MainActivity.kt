@@ -160,14 +160,14 @@ fun AppNavigation() {
                             val currentTitle = menuItems.find { item ->
                                 currentDestination?.hierarchy?.any { it.route == item.route } == true
                             }?.label ?: "Vuvur"
-                            val activeApiUrl = when (val state = uiState) {
-                                is GalleryUiState.Success -> state.activeApiUrl
-                                is GalleryUiState.Loading -> state.apiUrl ?: ""
+                            val activeApiDisplay = when (val state = uiState) {
+                                is GalleryUiState.Success -> state.activeApiAlias
+                                is GalleryUiState.Loading -> state.apiAlias ?: ""
                                 else -> ""
                             }
                             // ✅ Add the fontSize parameter here
                             Text(
-                                text = "$currentTitle - $activeApiUrl",
+                                text = "$currentTitle - $activeApiDisplay",
                                 fontSize = 18.sp
                             )
                         },
