@@ -47,8 +47,16 @@ sealed interface GalleryUiState {
         val apiAlias: String? = null
     ) : GalleryUiState
 
-    data class Scanning(val progress: Int, val total: Int) : GalleryUiState
-    data class Error(val message: String) : GalleryUiState
+    data class Scanning(
+        val progress: Int,
+        val total: Int,
+        val activeApiAlias: String = ""
+    ) : GalleryUiState
+
+    data class Error(
+        val message: String,
+        val activeApiAlias: String = ""
+    ) : GalleryUiState
     data class Success(
         val files: List<MediaFile> = emptyList(),
         val totalPages: Int = 1,

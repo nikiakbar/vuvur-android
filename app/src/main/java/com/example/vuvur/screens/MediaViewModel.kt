@@ -345,7 +345,10 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
                     println("BBB loadPage: Exception occurred: ${e.message}")
                     // Set error state, especially if it was an initial load
                     if (isNewSearch || currentStateValue !is GalleryUiState.Success) {
-                        _uiState.value = GalleryUiState.Error(e.message ?: "Unknown error loading gallery")
+                        _uiState.value = GalleryUiState.Error(
+                            message = e.message ?: "Unknown error loading gallery",
+                            activeApiAlias = activeApiAlias
+                        )
                     } else {
                         // If loading next page failed, just reset the flag, keep existing data
                         _uiState.update { if (it is GalleryUiState.Success) it.copy(isLoadingNextPage = false) else it}
@@ -361,17 +364,29 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
     // handleApiError remains the same
     private fun handleApiError(e: HttpException) {
         viewModelScope.launch(Dispatchers.IO) {
+            val activeApiUrl = repository.activeApiUrlFlow.first()
+            val activeApiAlias = repository.getAliasForUrl(activeApiUrl)
             try {
                 val scanStatus = apiService.getScanStatus()
                 if (!scanStatus.scan_complete) {
-                    _uiState.value = GalleryUiState.Scanning(scanStatus.progress, scanStatus.total)
+                    _uiState.value = GalleryUiState.Scanning(
+                        progress = scanStatus.progress,
+                        total = scanStatus.total,
+                        activeApiAlias = activeApiAlias
+                    )
                     startPollingForScanStatus()
                 } else {
-                    _uiState.value = GalleryUiState.Error("Error: ${e.code()} ${e.message()}")
+                    _uiState.value = GalleryUiState.Error(
+                        message = "Error: ${e.code()} ${e.message()}",
+                        activeApiAlias = activeApiAlias
+                    )
                 }
             } catch (innerE: Exception) {
                 println("Error handling API error: ${innerE.message}")
-                _uiState.value = GalleryUiState.Error(e.message ?: "Failed to connect or get scan status")
+                _uiState.value = GalleryUiState.Error(
+                    message = e.message ?: "Failed to connect or get scan status",
+                    activeApiAlias = activeApiAlias
+                )
             }
         }
     }
@@ -381,6 +396,8 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
     private fun startPollingForScanStatus() {
         if (pollingJob?.isActive == true) return
         pollingJob = viewModelScope.launch(Dispatchers.IO) {
+            val activeApiUrl = repository.activeApiUrlFlow.first()
+            val activeApiAlias = repository.getAliasForUrl(activeApiUrl)
             while (true) {
                 delay(2000)
                 try {
@@ -391,7 +408,11 @@ class MediaViewModel(application: Application) : AndroidViewModel(application) {
                     } else {
                         _uiState.update { currentState ->
                             if (currentState is GalleryUiState.Scanning) {
-                                currentState.copy(progress = status.progress, total = status.total)
+                                currentState.copy(
+                                    progress = status.progress,
+                                    total = status.total,
+                                    activeApiAlias = activeApiAlias
+                                )
                             } else {
                                 currentState // Stop updating if state changed
                             }
