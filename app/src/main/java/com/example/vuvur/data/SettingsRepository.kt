@@ -51,15 +51,15 @@ class SettingsRepository(
         // below is home
         "http://100.70.215.39:3602" to "vuvur_dev",
         "http://100.70.215.39:3532" to "vuvur_prod",
-        // below is azure hosted
-        "http://100.78.149.91:3532" to "vuvur_prod"
+        // below is cloud hosted
+        "http://100.108.234.82:3532" to "vuvur_prod"
     )
 
     // ✅ Map of API URLs to pretty aliases for UI
     private val DEFAULT_API_ALIASES = mapOf(
         "http://100.70.215.39:3602" to "home-dev",
         "http://100.70.215.39:3532" to "home-prod",
-        "http://100.78.149.91:3532" to "azure-prod"
+        "http://100.108.234.82:3532" to "doub-prod"
     )
 
     val activeApiUrlFlow: Flow<String> = dataStore.data.map { preferences ->
