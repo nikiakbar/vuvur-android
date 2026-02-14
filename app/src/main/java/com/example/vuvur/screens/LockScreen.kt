@@ -7,6 +7,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedTextField
@@ -63,25 +64,24 @@ fun LockScreen(onUnlock: () -> Unit) {
                 }
             } else if (enteredCode.length < 6) {
                 enteredCode += key
+                if (enteredCode.length == 6) {
+                    if (enteredCode == correctCode) {
+                        onUnlock()
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("Incorrect passcode")
+                        }
+                        enteredCode = ""
+                    }
+                }
             }
         })
         Spacer(modifier = Modifier.height(16.dp))
-        Row {
-            Button(onClick = { enteredCode = "" }) {
-                Text("Clear")
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-            Button(onClick = {
-                if (enteredCode == correctCode) {
-                    onUnlock()
-                } else {
-                    scope.launch {
-                        snackbarHostState.showSnackbar("Incorrect passcode")
-                    }
-                }
-            }) {
-                Text("Enter")
-            }
+        Button(
+            onClick = { enteredCode = "" },
+            modifier = Modifier.height(56.dp).width(120.dp)
+        ) {
+            Text("Clear", fontSize = 18.sp)
         }
     }
     }
@@ -89,27 +89,43 @@ fun LockScreen(onUnlock: () -> Unit) {
 
 @Composable
 fun NumericKeypad(onKeyPress: (String) -> Unit) {
-    Column {
+    val buttonModifier = Modifier.size(85.dp)
+    val fontSize = 24.sp
+
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
         (1..9).chunked(3).forEach { row ->
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 row.forEach { number ->
-                    Button(onClick = { onKeyPress(number.toString()) }) {
-                        Text(number.toString())
+                    Button(
+                        onClick = { onKeyPress(number.toString()) },
+                        modifier = buttonModifier
+                    ) {
+                        Text(number.toString(), fontSize = fontSize)
                     }
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
         }
         Row(
-            horizontalArrangement = Arrangement.spacedBy(8.dp)
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Button(onClick = { onKeyPress("0") }) {
-                Text("0")
+            // Spacer to align 0 in the middle
+            Spacer(modifier = buttonModifier)
+            Button(
+                onClick = { onKeyPress("0") },
+                modifier = buttonModifier
+            ) {
+                Text("0", fontSize = fontSize)
             }
-            Button(onClick = { onKeyPress("backspace") }) {
-                Text("<-")
+            Button(
+                onClick = { onKeyPress("backspace") },
+                modifier = buttonModifier
+            ) {
+                Text("<-", fontSize = 18.sp)
             }
         }
     }
