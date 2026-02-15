@@ -43,7 +43,7 @@ class SettingsRepository(
         "http://100.70.215.39:3602",
         "http://100.70.215.39:3532",
         // below is azure hosted
-        "http://100.78.149.91:3532"
+        "http://100.108.234.82:3532"
     )
 
     // ✅ Map of default API URLs to their respective keys
