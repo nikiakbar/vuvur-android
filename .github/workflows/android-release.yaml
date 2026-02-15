@@ -3,8 +3,7 @@ name: Android Release Build
 on:
   push:
     branches:
-      - main
-      - dev
+      - '**'
   workflow_dispatch:
 
 permissions:
@@ -42,8 +41,9 @@ jobs:
           # Update gradle.properties
           sed -i "s/app.versionName=.*/app.versionName=$NEW_VERSION/" gradle.properties
           
-          # Determine final version string for release
-          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
+            # Note: This keeps the suffix as "-dev". 
+            # If we want the actual branch name (e.g., -feature-login), use ${GITHUB_REF_NAME} instead of "dev" below.
             VERSION_STRING="${NEW_VERSION}-dev.${GITHUB_RUN_NUMBER}"
           else
             VERSION_STRING="${NEW_VERSION}"
@@ -65,7 +65,7 @@ jobs:
 
       - name: Build APK
         run: |
-          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
             ./gradlew :app:assembleDevDebug -PversionCode=${{ github.run_number }}
           else
             ./gradlew :app:assembleProdDebug -PversionCode=${{ github.run_number }}
@@ -73,7 +73,7 @@ jobs:
 
       - name: Rename APK if dev branch
         run: |
-          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
             APK_PATH=$(ls app/build/outputs/apk/dev/debug/*.apk | head -n 1)
           else
             APK_PATH=$(ls app/build/outputs/apk/prod/debug/*.apk | head -n 1)
@@ -82,9 +82,9 @@ jobs:
           APK_NAME=$(basename "$APK_PATH")
           echo "Original APK: $APK_NAME"
 
-          if [ "${GITHUB_REF_NAME}" = "dev" ]; then
+          # Check if NOT main
+          if [ "${GITHUB_REF_NAME}" != "main" ]; then
             NEW_APK_NAME="dev-$APK_NAME"
-            # Move to a common location for release upload if needed, or just rename in place
             mv "$APK_PATH" "app/build/outputs/apk/dev/debug/$NEW_APK_NAME"
             echo "Renamed APK: $NEW_APK_NAME"
           else
@@ -100,7 +100,7 @@ jobs:
           files: |
             app/build/outputs/apk/dev/debug/*.apk
             app/build/outputs/apk/prod/debug/*.apk
-          prerelease: ${{ github.ref_name == 'dev' }}
+          prerelease: ${{ github.ref_name != 'main' }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 

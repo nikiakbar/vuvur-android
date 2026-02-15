@@ -163,9 +163,9 @@ fun AppNavigation() {
                             val activeApiDisplay = when (val state = uiState) {
                                 is GalleryUiState.Success -> state.activeApiAlias
                                 is GalleryUiState.Loading -> state.apiAlias ?: ""
-                                else -> ""
+                                is GalleryUiState.Scanning -> state.activeApiAlias
+                                is GalleryUiState.Error -> state.activeApiAlias
                             }
-                            // ✅ Add the fontSize parameter here
                             Text(
                                 text = "$currentTitle - $activeApiDisplay",
                                 fontSize = 18.sp
